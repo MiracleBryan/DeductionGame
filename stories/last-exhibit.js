@@ -552,7 +552,7 @@ Daniel's patrol tag stayed in the loading area. A signed repayment slip and bett
             return say(uiEnglish ? `YOU ACCUSE ${people[id].englishName}.\n\n${englishOutcomes[id]}` : `你指控了 ${people[id].name}。\n\n${outcomes[id]}`, "danger");
         }
         const missing = finalRequiredClues.filter(id => !game.clues.has(id));
-        if (missing.length) return say(uiEnglish ? `YOU ACCUSE CLARA.\n\nThe theory has motive and opportunity, but the evidence is incomplete. You still lack ${missing.length} important clue(s).\n\nEstablish the real death window, Clara's presence in the archive, and the physical link between her and the weapon.` : `你指控了克拉拉。\n\n这个推论具备动机和机会，但证据尚不完整。你还缺少 ${missing.length} 条重要证据。\n\n请确定真实死亡时段、克拉拉出现在档案室的证据，以及她与凶器之间的物证联系。`, "warning");
+        if (missing.length) return say(uiEnglish ? "YOU ACCUSE CLARA.\n\nThe theory has motive and opportunity, but the case is not yet strong enough to close. Keep exploring the contradictions in testimony, the alibis, and the physical trail through the archive." : "你指控了克拉拉。\n\n这个推论具备动机和机会，但案件证据尚不足以结案。请继续探索证词中的矛盾、不在场证明，以及档案室留下的物证路径。", "warning");
         if (game.finalTheoryStep === 0) {
             game.finalTheoryStep = 1;
             return say(uiEnglish ? `FINAL DEDUCTION\n\nYour evidence supports an accusation, but you must now reconstruct the crime.\n\nStep 1 of 3: State the medical examiner's death window.\nType: theory time 9:21-9:23` : `最终推理\n\n你的证据支持指控，但你必须重建犯罪过程。\n\n第 1 步，共 3 步：指出法医确认的死亡时段。\n输入：理论 时间 9:21-9:23`, "important");
@@ -618,13 +618,11 @@ Daniel's patrol tag stayed in the loading area. A signed repayment slip and bett
     }
 
     function requirements() {
-        const verified = finalRequiredClues.filter(id => game.clues.has(id)).length;
-        say(uiEnglish ? `CASE REQUIREMENTS\n\n  Required evidence verified: ${verified}/${finalRequiredClues.length}\n\n  Before a final accusation, fully investigate every suspect, their alibis, and the physical evidence.\n\n  A supported accusation begins a three-step final reconstruction:\n  1. Establish the death window.\n  2. Identify the murder weapon.\n  3. Connect the physical trace to the killer.\n\nThe case file gives the answers; this list only defines what you must prove.` : `案件要求\n\n  已验证必要证据：${verified}/${finalRequiredClues.length}\n\n  提出最终指控前，必须完整调查每位嫌疑人、他们的不在场证明和物证。\n\n  证据充分的指控将开始三步最终推理：\n  1. 确定死亡时段。\n  2. 找出凶器。\n  3. 将物证痕迹与凶手相连。\n\n案件档案会给出答案；此列表只说明你必须证明什么。`);
+        say(uiEnglish ? `INVESTIGATION GUIDE\n\nFollow whichever leads interest you: compare testimony, test alibis, search rooms, and inspect physical evidence. Some lies protect private secrets; others conceal the murder.\n\nWhen you are ready to accuse someone, your evidence must explain the death window, the weapon, and the trace that connects the killer to the crime.` : `调查指南\n\n你可以从任何感兴趣的线索开始：对照证词、核验不在场证明、搜索房间，并检查物证。有些谎言在掩盖私人秘密，另一些则在掩盖谋杀。\n\n当你准备指控某人时，你的证据必须解释死亡时段、凶器，以及将凶手与犯罪现场相连的物证痕迹。`);
     }
 
     function details() {
-        const verified = finalRequiredClues.filter(id => game.clues.has(id)).length;
-        say(uiEnglish ? `CASE STATUS\n\n  Evidence recorded: ${game.clues.size}/${Object.keys(evidence).length}\n  Required evidence: ${verified}/${finalRequiredClues.length}\n  Interviews started: ${game.talked.size}/6\n  Areas searched: ${game.searched.size}\n  Accusations made: ${game.accusations}\n  Case: ${game.solved ? "SOLVED" : "OPEN"}` : `案件状态\n\n  已发现证据：${game.clues.size}/${Object.keys(evidence).length}\n  已验证必要证据：${verified}/${finalRequiredClues.length}\n  已开始讯问：${game.talked.size}/6\n  已搜索区域：${game.searched.size}\n  已提出指控：${game.accusations}\n  案件：${game.solved ? "已侦破" : "进行中"}`);
+        say(uiEnglish ? `CASE STATUS\n\n  Evidence recorded: ${game.clues.size}\n  Interviews started: ${game.talked.size}/6\n  Areas searched: ${game.searched.size}\n  Accusations made: ${game.accusations}\n  Case: ${game.solved ? "SOLVED" : "OPEN"}` : `案件状态\n\n  已发现证据：${game.clues.size}\n  已开始讯问：${game.talked.size}/6\n  已搜索区域：${game.searched.size}\n  已提出指控：${game.accusations}\n  案件：${game.solved ? "已侦破" : "进行中"}`);
     }
 
     window.murderRunCommand = raw => {
@@ -706,8 +704,6 @@ Daniel's patrol tag stayed in the loading area. A signed repayment slip and bett
 
 招待会结束不久，阿什福德在封闭档案室中被发现遭人杀害。安保主管立即封锁大楼。招待会后仍留在馆内的六个人，现在都无法离开。`);
         say("");
-    requirements();
-    say("");
         say("在你确定是谁杀害阿什福德博士、何时发生，以及凶手如何掩盖罪行之前，没有人能离开。", "warning");
         say("这是一款文字推理游戏。输入命令来调查案件。", "warning");
         say("输入“帮助”查看可执行的命令。", "system");
