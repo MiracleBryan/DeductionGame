@@ -7,6 +7,7 @@
     const game = {
         clues: new Set(),
         talked: new Set(),
+        casualTalkIndex: {},
         questioned: {},
         searched: new Set(),
         accusations: 0,
@@ -20,6 +21,8 @@
             intro: `克拉拉是阿什福德博士的副手，也是最后一位被目击与他交谈的人。她身穿醒目的红色修身西装外套，称自己于晚上 9:08 离开博士办公室，独自准备董事会简报，并在晚上 9:34 发现尸体。`,
             englishName: "Clara Voss", englishRole: "Deputy Director",
             englishIntro: `Clara is Dr. Ashford's deputy and the last person seen speaking with him. In a striking red fitted blazer, she says she left his office at 9:08 PM to prepare the board briefing alone, then found the body at 9:34 PM.`,
+            smallTalk: ["克拉拉把散乱的简报纸叠齐，抱怨董事会总在最糟糕的时候要求解释数字。", "克拉拉望向封锁线，低声说博物馆从没有像今晚这样安静过。"],
+            englishSmallTalk: ["Clara straightens the scattered briefing pages and complains that the board always asks for numbers at the worst possible time.", "Clara glances toward the cordon and says the museum has never been this quiet."],
             rounds: [
                 [`问题：阿什福德博士为何召开紧急董事会？
 
@@ -48,6 +51,8 @@ Clara: "I went there only to retrieve my briefing packet. Julian was alive; we a
             intro: `丹尼尔称谋杀发生时自己正在外围巡逻，并认为档案室摄像头故障只是常规继电器问题。`,
             englishName: "Daniel Rook", englishRole: "Night Security Chief",
             englishIntro: `Daniel says he was on an exterior patrol during the murder and insists the archive-camera failure was a routine relay problem.`,
+            smallTalk: ["丹尼尔反复检查对讲机频道，称今晚每一盏报警灯都像在针对他。", "丹尼尔说他最讨厌雨夜值班，监控屏幕总会反光。"],
+            englishSmallTalk: ["Daniel repeatedly checks the radio channels, saying every alarm light seems to have it in for him tonight.", "Daniel says he hates night duty in the rain; the security screens always reflect too much."],
             rounds: [
                 [`问题：为何继电器恰在谋杀期间失效？
 
@@ -76,6 +81,8 @@ Daniel: "I was paying a debt. Stupid? Yes. Murder? No. Before I went down, I saw
             intro: `伊芙琳当时正在阅览室编目书信。阿什福德博士曾驳回她的研究资助申请，去年还解雇了她的哥哥。`,
             englishName: "Evelyn Hart", englishRole: "Collections Researcher",
             englishIntro: `Evelyn was cataloguing letters in the reading room. Dr. Ashford rejected her research grant and dismissed her brother last year.`,
+            smallTalk: ["伊芙琳小心地把一张旧书信放回保护套，说纸张总比人更容易保存秘密。", "伊芙琳提到新展览的展签字体糟糕透顶，随即又闭上了嘴。"],
+            englishSmallTalk: ["Evelyn carefully returns an old letter to its sleeve and says paper keeps secrets more easily than people do.", "Evelyn mentions that the new exhibition labels use an awful typeface, then falls silent."],
             rounds: [
                 [`问题：阿什福德博士是否给过您怨恨他的理由？
 
@@ -104,6 +111,8 @@ Evelyn: "Then you know I did not kill him. Julian was trying to stop exhibition 
             intro: `马库斯前来协商展品借用事宜。他曾因来源证明与阿什福德博士争吵，而他的古董刀被发现于尸体旁。`,
             englishName: "Marcus Cole", englishRole: "Antiquities Dealer",
             englishIntro: `Marcus came to negotiate an object loan. He argued with Dr. Ashford about provenance papers, and his antique knife was found beside the body.`,
+            smallTalk: ["马库斯擦去袖口上的修复粉尘，说真正的古物从不急着向人证明自己。", "马库斯评论大厅里的灯光太冷，不适合展示青铜器。"],
+            englishSmallTalk: ["Marcus brushes restoration dust from his cuff and says genuine antiquities never rush to prove themselves.", "Marcus comments that the hall lighting is too cold for displaying bronze."],
             rounds: [
                 [`问题：您为何与阿什福德博士争吵？
 
@@ -132,6 +141,8 @@ Marcus: "Clara. Ashford asked whether I had seen invoices from Voss Cultural Hol
             intro: `艾丽斯当时在会议室整理董事会记录。她称关键时段内一直在接线台进行两通连续电话。`,
             englishName: "Iris Bell", englishRole: "Board Secretary",
             englishIntro: `Iris was organising board records in the conference room. She says she made two consecutive switchboard calls during the critical period.`,
+            smallTalk: ["艾丽斯把会议记录按颜色排好，说有些董事连自己的议程都记不住。她顺手把用来加热红蜡的小银勺放回资料室托盘。", "艾丽斯轻轻敲着笔帽，等待接线台再次响起。"],
+            englishSmallTalk: ["Iris sorts the board minutes by colour and says some trustees cannot remember their own agenda. She returns the small silver spoon used to warm red wax to the records-room tray.", "Iris taps a pen cap softly while waiting for the switchboard to ring again."],
             rounds: [
                 [`问题：您的电话内容是什么？
 
@@ -157,9 +168,11 @@ Iris: "Around 9:26, she crossed the conference corridor with the packet. She loo
         },
         victor: {
             name: "维克多·黑尔", role: "董事会司库",
-            intro: `维克多长期在阿什福德博士的光芒下工作。他嫉妒馆长获得董事会信任，也厌恶自己在新展览计划中被边缘化。他主动带来一张“目击者便笺”，声称这能证明马库斯在案发走廊出现过。`,
+            intro: `维克多称自己整晚都在整理董事会财务记录。面对调查，他礼貌而克制，还主动交出一张“目击者便笺”，声称这能证明马库斯在案发走廊出现过。`,
             englishName: "Victor Hale", englishRole: "Board Treasurer",
-            englishIntro: `Victor has long worked in Dr. Ashford's shadow. He resents the director's standing with the board and being sidelined from the new exhibition. He volunteers a "witness note" that supposedly places Marcus in the archive corridor.`,
+            englishIntro: `Victor says he spent the evening organising the board's financial records. He is polite and composed under questioning, and volunteers a "witness note" that supposedly places Marcus in the archive corridor.`,
+            smallTalk: ["维克多合上账本，说博物馆里最难管理的从来不是藏品，而是捐助人的期待。他抱怨董事会办公室那台旧打字机总会卡住色带。", "维克多微笑着问你是否需要咖啡，仿佛这里只是在进行一场例行会议。"],
+            englishSmallTalk: ["Victor closes a ledger and says the hardest thing to manage in a museum is never the collection, but donor expectations. He complains that the old board-office typewriter always catches its ribbon.", "Victor smiles and asks whether you need coffee, as though this were an ordinary meeting."],
             rounds: [
                 [`问题：这张目击者便笺从哪里来？
 
@@ -191,7 +204,7 @@ Victor: "At about 9:18, I saw Clara leave the board records room carrying that b
         evelyn_statement: "伊芙琳称谋杀时段正在阅览室编目书信。",
         marcus_statement: "马库斯承认古董刀在尸体旁，但称阿什福德博士借过它。",
         iris_statement: "艾丽斯称两通录音电话能够证明她在谋杀时段的行踪。",
-        victor_statement: "维克多承认自己与阿什福德博士关系紧张，却否认参与谋杀。",
+        victor_statement: "维克多称自己与阿什福德博士并无冲突，并交出一张指向马库斯的匿名目击者便笺。",
         autopsy: "创伤由扁平狭窄的拆信刀造成，不是马库斯的尖头古董刀。死亡时间：晚上 9:21 至 9:23。",
         wax_fiber: "伤口内嵌有红色封蜡与破损的董事会信封纤维；两者都与克拉拉的简报资料包相符。",
         camera_delay: "档案室摄像头时钟比博物馆中央时钟恰慢两分钟。",
@@ -223,7 +236,7 @@ Victor: "At about 9:18, I saw Clara leave the board records room carrying that b
         evelyn_statement: "Evelyn says she was cataloguing letters in the reading room during the murder window.",
         marcus_statement: "Marcus admits his antique knife was beside the body, but says Dr. Ashford borrowed it.",
         iris_statement: "Iris says two recorded calls can prove where she was during the murder window.",
-        victor_statement: "Victor admits his relationship with Dr. Ashford was strained, but denies involvement in the murder.",
+        victor_statement: "Victor claims he had no conflict with Dr. Ashford and supplies an anonymous witness note pointing to Marcus.",
         autopsy: "The wound was made by a flat, narrow letter opener, not Marcus's pointed antique knife. Time of death: 9:21 to 9:23 PM.",
         wax_fiber: "Red sealing wax and fibres from a torn board envelope were embedded in the wound; both match Clara's briefing packet.",
         camera_delay: "The archive camera clock runs exactly two minutes behind the museum's central clock.",
@@ -389,9 +402,15 @@ Some lies conceal personal secrets; they do not identify the killer.`]
     function interview(name) {
         const id = person(name);
         if (!id) return say(uiEnglish ? "Unknown suspect. Try: Clara, Daniel, Evelyn, Marcus, Iris, or Victor." : "未知嫌疑人。请尝试：克拉拉、丹尼尔、伊芙琳、马库斯、艾丽斯或维克多。", "warning");
+        const suspect = people[id];
+        if (game.talked.has(id)) {
+            const index = game.casualTalkIndex[id] || 0;
+            const remarks = uiEnglish ? suspect.englishSmallTalk : suspect.smallTalk;
+            game.casualTalkIndex[id] = index + 1;
+            return say(remarks[index % remarks.length], "muted");
+        }
         game.talked.add(id);
         clue(id + "_statement");
-        const suspect = people[id];
         const displayName = uiEnglish ? suspect.englishName : suspect.name;
         say(`${displayName} - ${uiEnglish ? suspect.englishRole : suspect.role}`, "system");
         say("");
@@ -490,16 +509,16 @@ Daniel's patrol tag stayed in the loading area. A signed repayment slip and bett
 丹尼尔的巡逻标签一直留在装卸区。签字还款单和博彩室柜台摄像头证明他从 9:19 至 9:24 都在楼下。他撒谎是为掩盖债务，不是谋杀。`);
         }
     if (target.includes("ledger") || target.includes("finance") || target.includes("account") || target.includes("财务") || target.includes("账本") || target.includes("资金")) {
-        game.searched.add("finance"); clue("ledger_page"); clue("victor_blackmail_notes"); clue("victor_forgery_proof");
+        game.searched.add("finance"); clue("ledger_page"); clue("victor_blackmail_notes");
         return say(uiEnglish ? `FINANCE ARCHIVE
 
     A page from the exhibition-funds ledger was torn from its binder. Impressions and a carbon copy remain, showing Voss Cultural Holdings received unusual transfers before the exhibition opened.
 
-    The transfers were then split across three shell accounts. The hidden compartment also holds Victor's forged supplier letters and anonymous complaints. Typewriter ribbon and indentation marks prove his "witness note" about Marcus came from him as well. He tried to ruin Ashford with scandal and steer this investigation toward Marcus. Both crimes are real, but neither necessarily explains the murder.` : `财务档案柜
+    The transfers were then split across three shell accounts. The hidden compartment also holds Victor's forged supplier letters and anonymous complaints. The note's typeface and ribbon smudges suggest it came from the board office, where a closer inspection may identify the machine. He tried to ruin Ashford with scandal and steer this investigation toward Marcus. Both crimes are real, but neither necessarily explains the murder.` : `财务档案柜
 
 一页展览资金分类账被从活页夹中撕走。压痕和碳纸副本仍留在夹层里，显示沃斯文化控股在展览开始前收到多笔异常转账。
 
-转账随后被拆分至三个空壳账户。夹层里还藏着维克多伪造的供应商信件和匿名举报草稿；打字机色带与压痕还证明，那张指向马库斯的“目击者便笺”同样出自维克多之手。他试图用丑闻和假线索毁掉阿什福德博士，并将调查引向马库斯。两人的罪行都是真实的，但未必是谋杀。`);
+转账随后被拆分至三个空壳账户。夹层里还藏着维克多伪造的供应商信件和匿名举报草稿；便笺的字体和色带污迹指向董事会办公室，进一步检查或许能找出使用的机器。他试图用丑闻和假线索毁掉阿什福德博士，并将调查引向马库斯。两人的罪行都是真实的，但未必是谋杀。`);
     }
     say(uiEnglish ? "Try: archive, camera relay, workshop, office, reading room, switchboard, security station, or finance archive." : "请尝试：档案室、摄像头继电器、工坊、办公室、阅览室、接线台、安保站或财务档案柜。", "warning");
     }
@@ -524,6 +543,8 @@ Daniel's patrol tag stayed in the loading area. A signed repayment slip and bett
         if (target.includes("letter") || target.includes("opener") || target.includes("weapon") || target.includes("拆信") || target.includes("凶器")) { clue("letter_opener"); clue("autopsy"); return say(uiEnglish ? "LETTER OPENER\n\nThe cleaned letter opener in Clara's office matches the wound in width and profile. Blood remains below its guard." : "拆信刀\n\n克拉拉办公室内清洗过的拆信刀，其宽度和轮廓与伤口吻合。刀柄护圈下方仍留有血迹。"); }
         if (target.includes("key") || target.includes("card") || target.includes("access") || target.includes("门禁") || target.includes("钥匙")) { clue("archive_key"); return say(uiEnglish ? "ARCHIVE ACCESS LOG\n\n9:18 PM - Clara Voss's master card opened the archive. No other card entered before the body was found." : "档案室门禁记录\n\n晚上 9:18 - 克拉拉·沃斯的万能门禁卡打开档案室。尸体被发现前，没有其他卡片进入。 "); }
         if (target.includes("phone") || target.includes("call") || target.includes("电话") || target.includes("通话")) { clue("call_log"); return say(uiEnglish ? "INTERNAL CALL LOG\n\nAt 9:16 PM, Clara's extension called Dr. Ashford's office for 42 seconds. She did not mention the call." : "内部电话记录\n\n晚上 9:16，克拉拉的分机致电阿什福德博士办公室，通话 42 秒。她没有提起这通电话。 "); }
+        if (target.includes("typewriter") || target.includes("typing") || target.includes("打字机")) { clue("victor_forgery_proof"); return say(uiEnglish ? "BOARD-OFFICE TYPEWRITER\n\nThe typeface, worn lowercase e, and ribbon smudges match the anonymous witness note and Victor's complaint drafts. The note did not come from an unnamed employee." : "董事会办公室打字机\n\n字形、磨损的小写 e 和色带污迹都与匿名目击者便笺及维克多的举报草稿吻合。这张便笺并非来自不愿留名的员工。"); }
+        if (target.includes("spoon") || target.includes("wax spoon") || target.includes("蜡勺") || target.includes("小银勺")) { clue("wax_registry"); return say(uiEnglish ? "WAX-WARMING SPOON\n\nThe spoon carries traces of the same red wax used on board packets. Its tray log confirms Iris checked it out at Clara's request." : "加热封蜡的小银勺\n\n勺上残留的红蜡与董事会资料包所用批次相同。托盘登记证实，艾丽斯依克拉拉的要求取用了它。"); }
         if (target.includes("wax") || target.includes("envelope") || target.includes("fiber") || target.includes("蜡") || target.includes("信封") || target.includes("纤维")) { clue("wax_fiber"); clue("wax_registry"); return say(uiEnglish ? "SEALING WAX AND ENVELOPE FIBRES\n\nThe red wax and beige fibres in the wound match Clara's confidential board packet. The batch register shows Iris collected the wax at Clara's request." : "封蜡与信封纤维\n\n伤口中的红蜡和米色纤维，与克拉拉的机密董事会资料包相符。批次登记显示这批红蜡由艾丽斯依克拉拉要求领取。 "); }
         if (target.includes("audit") || target.includes("memo") || target.includes("fund") || target.includes("审计") || target.includes("备忘录") || target.includes("资金")) { clue("audit_memo"); return say(uiEnglish ? "AUDIT MEMO\n\nDr. Ashford planned to reveal Clara's diversion of exhibition funds to the board the following morning." : "审计备忘录\n\n阿什福德博士计划于次日早晨向董事会揭露克拉拉挪用展览资金的行为。 "); }
         say(uiEnglish ? "Try: footage, camera, knife, letter opener, access card, call log, sealing wax, or audit memo." : "请尝试：录像、摄像头、刀、拆信刀、门禁卡、通话记录、封蜡或审计备忘录。", "warning");
@@ -655,6 +676,7 @@ Daniel's patrol tag stayed in the loading area. A signed repayment slip and bett
         localStorage.setItem(gameSaveKey, JSON.stringify({
             clues: [...game.clues],
             talked: [...game.talked],
+            casualTalkIndex: game.casualTalkIndex,
             questioned: game.questioned,
             searched: [...game.searched],
             accusations: game.accusations,
@@ -672,6 +694,7 @@ Daniel's patrol tag stayed in the loading area. A signed repayment slip and bett
 
             game.clues = new Set(savedGame.clues || []);
             game.talked = new Set(savedGame.talked || []);
+            game.casualTalkIndex = savedGame.casualTalkIndex || {};
             game.questioned = savedGame.questioned || {};
             game.searched = new Set(savedGame.searched || []);
             game.accusations = savedGame.accusations || 0;
@@ -714,6 +737,7 @@ Daniel's patrol tag stayed in the loading area. A signed repayment slip and bett
     function restartGame() {
         game.clues.clear();
         game.talked.clear();
+        game.casualTalkIndex = {};
         game.questioned = {};
         game.searched.clear();
         game.accusations = 0;
