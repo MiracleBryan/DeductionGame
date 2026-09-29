@@ -77,7 +77,6 @@ function updateInterfaceText() {
 }
 
 const saveRegistryKey = "deduction-game-saves-v1";
-const activeLanguage = isEnglish ? "en" : "zh";
 const activeSaveId = new URLSearchParams(window.location.search).get("save");
 
 function getSavedGames() {
@@ -93,9 +92,10 @@ const savedGames = getSavedGames();
 const activeSave = savedGames.find(game => game.id === activeSaveId);
 const hasActiveSave = Boolean(activeSave);
 
-function loadGame(saveId) {
+function loadGame(saveId, language) {
     const url = new URL(window.location.href);
     url.searchParams.set("save", saveId);
+    url.searchParams.set("lang", language);
     window.location.href = url.toString();
 }
 
@@ -104,6 +104,7 @@ function deleteGame(saveId) {
     if (gameIndex === -1) return;
 
     const [deletedGame] = savedGames.splice(gameIndex, 1);
+    localStorage.removeItem(`deduction-game-progress-v1-${deletedGame.id}`);
     localStorage.removeItem(`deduction-game-progress-en-v1-${deletedGame.id}`);
     localStorage.removeItem(`deduction-game-progress-zh-v1-${deletedGame.id}`);
     localStorage.setItem(saveRegistryKey, JSON.stringify(savedGames));
@@ -120,11 +121,11 @@ function createGame(name) {
     const newGame = {
         id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
         name: saveName,
-        language: activeLanguage
+        language: uiEnglish ? "en" : "zh"
     };
     savedGames.push(newGame);
     localStorage.setItem(saveRegistryKey, JSON.stringify(savedGames));
-    loadGame(newGame.id);
+    loadGame(newGame.id, newGame.language);
 }
 
 function setupSaveDialog() {
@@ -162,7 +163,7 @@ function renderSaveDialog() {
             const loadButton = document.createElement("button");
             loadButton.type = "button";
             loadButton.textContent = copy.load;
-            loadButton.addEventListener("click", () => loadGame(game.id));
+            loadButton.addEventListener("click", () => loadGame(game.id, game.language));
             const deleteButton = document.createElement("button");
             deleteButton.type = "button";
             deleteButton.className = "delete-save";

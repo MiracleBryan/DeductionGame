@@ -1,5 +1,8 @@
 (() => {
-    if (isEnglish) return;
+    const output = document.getElementById("output");
+    const input = document.getElementById("commandInput");
+    const commandForm = document.getElementById("commandForm");
+    const statusEl = document.getElementById("status");
 
     const game = {
         clues: new Set(),
@@ -392,10 +395,11 @@ Some lies conceal personal secrets; they do not identify the killer.`]
         say(`未知命令：“${raw}”\n\n输入“帮助”查看可用命令。`, "warning");
     };
 
-    const chineseSaveKey = `deduction-game-progress-zh-v1-${activeSaveId}`;
+    const gameSaveKey = `deduction-game-progress-v1-${activeSaveId}`;
+    const legacyChineseSaveKey = `deduction-game-progress-zh-v1-${activeSaveId}`;
 
     function saveChineseGame() {
-        localStorage.setItem(chineseSaveKey, JSON.stringify({
+        localStorage.setItem(gameSaveKey, JSON.stringify({
             clues: [...game.clues],
             talked: [...game.talked],
             questioned: game.questioned,
@@ -409,7 +413,7 @@ Some lies conceal personal secrets; they do not identify the killer.`]
 
     function restoreChineseGame() {
         try {
-            const savedGame = JSON.parse(localStorage.getItem(chineseSaveKey));
+            const savedGame = JSON.parse(localStorage.getItem(gameSaveKey) || localStorage.getItem(legacyChineseSaveKey));
             if (!savedGame) return false;
 
             game.clues = new Set(savedGame.clues || []);
@@ -422,7 +426,7 @@ Some lies conceal personal secrets; they do not identify the killer.`]
             statusEl.textContent = savedGame.status || "案件状态：进行中";
             return true;
         } catch {
-            localStorage.removeItem(chineseSaveKey);
+            localStorage.removeItem(gameSaveKey);
             return false;
         }
     }
@@ -430,24 +434,59 @@ Some lies conceal personal secrets; they do not identify the killer.`]
     if (hasActiveSave) {
         window.gamePersistence = {
             save: saveChineseGame,
-            clear: () => localStorage.removeItem(chineseSaveKey)
+            clear: () => localStorage.removeItem(gameSaveKey)
         };
     }
 
-    output.innerHTML = "";
-    statusEl.textContent = "案件状态：进行中";
-    say("案件档案 047 - 最后的展品", "system");
-    say("");
-    say(`案情简报
+    function printIntro() {
+        output.innerHTML = "";
+        statusEl.textContent = "案件状态：进行中";
+        say("案件档案 047 - 最后的展品", "system");
+        say("");
+        say(`案情简报
 
 布莱克伍德博物馆为雄心勃勃的新展览举行私人董事会招待会后，已闭馆。备受敬重的馆长朱利安·阿什福德博士原定于翌日早晨召开紧急董事会，只有最亲近的圈内人知道原因。
 
 招待会结束不久，阿什福德在封闭档案室中被发现遭人杀害。安保主管立即封锁大楼。招待会后仍留在馆内的五个人，现在都无法离开。`);
-    say("");
-    say("在你确定是谁杀害阿什福德博士、何时发生，以及凶手如何掩盖罪行之前，没有人能离开。", "warning");
-    say("这是一款文字推理游戏。输入命令来调查案件。", "warning");
-    say("输入“帮助”查看可执行的命令。", "system");
-    say("");
-    say("档案室已封锁。时钟显示晚上 9:41。", "muted");
-    if (hasActiveSave) restoreChineseGame();
+        say("");
+        say("在你确定是谁杀害阿什福德博士、何时发生，以及凶手如何掩盖罪行之前，没有人能离开。", "warning");
+        say("这是一款文字推理游戏。输入命令来调查案件。", "warning");
+        say("输入“帮助”查看可执行的命令。", "system");
+        say("");
+        say("档案室已封锁。时钟显示晚上 9:41。", "muted");
+    }
+
+    function restartGame() {
+        game.clues.clear();
+        game.talked.clear();
+        game.questioned = {};
+        game.searched.clear();
+        game.accusations = 0;
+        game.solved = false;
+        window.gamePersistence?.clear();
+        printIntro();
+        window.updateTerminalLanguage?.();
+        window.gamePersistence?.save();
+    }
+
+    window.restartGame = restartGame;
+
+    commandForm.addEventListener("submit", event => {
+        event.preventDefault();
+        const command = input.value.trim();
+        if (!command) return;
+        input.value = "";
+        window.murderRunCommand(command);
+        window.gamePersistence?.save();
+    });
+
+    document.addEventListener("click", () => {
+        if (document.getElementById("saveDialog").classList.contains("hidden")) {
+            input.focus();
+        }
+    });
+
+    if (!hasActiveSave || !restoreChineseGame()) printIntro();
+    updateInterfaceText();
+    window.updateTerminalLanguage?.();
 })();
