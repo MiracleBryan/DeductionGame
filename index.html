@@ -157,6 +157,89 @@
 
     .hidden { display: none; }
 
+    .save-dialog {
+        position: fixed;
+        inset: 0;
+        z-index: 10;
+        display: grid;
+        place-items: center;
+        padding: 18px;
+        background: rgba(8, 11, 15, .86);
+    }
+
+    .save-dialog.hidden { display: none; }
+
+    .save-panel {
+        width: min(520px, 100%);
+        padding: 22px;
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        box-shadow: 0 24px 70px rgba(0, 0, 0, .55);
+    }
+
+    .save-panel h1 {
+        margin: 0 0 8px;
+        color: var(--cyan);
+        font-size: 18px;
+    }
+
+    .save-panel p {
+        margin: 0 0 18px;
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.5;
+    }
+
+    .save-form {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 20px;
+    }
+
+    .save-form input {
+        min-width: 0;
+        flex: 1;
+        padding: 7px 9px;
+        color: var(--text);
+        background: #080b0f;
+        border: 1px solid var(--border);
+        border-radius: 5px;
+        font: inherit;
+    }
+
+    .save-list {
+        display: grid;
+        gap: 8px;
+    }
+
+    .save-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 10px;
+        background: #111820;
+        border: 1px solid var(--border);
+        border-radius: 5px;
+    }
+
+    .save-item-name {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .save-actions {
+        display: flex;
+        flex-shrink: 0;
+        gap: 8px;
+    }
+
+    .delete-save {
+        color: var(--red);
+    }
+
     @media (max-width: 650px) {
         body { padding: 0; }
         .terminal { min-height: 100vh; border-radius: 0; }
@@ -197,6 +280,18 @@
     </div>
 </div>
 
+<div id="saveDialog" class="save-dialog" role="dialog" aria-modal="true" aria-labelledby="saveDialogTitle">
+    <section class="save-panel">
+        <h1 id="saveDialogTitle">选择案件</h1>
+        <p id="saveDialogDescription">为新案件命名，或载入之前保存的案件。</p>
+        <form id="saveForm" class="save-form">
+            <input id="saveName" maxlength="40" autocomplete="off" placeholder="新案件名称" required>
+            <button id="createSaveButton" type="submit">开始新案件</button>
+        </form>
+        <div id="saveList" class="save-list"></div>
+    </section>
+</div>
+
 <script>
 const isEnglish = new URLSearchParams(window.location.search).get("lang") === "en";
 
@@ -221,6 +316,123 @@ if (isEnglish) {
     document.getElementById("languageToggle").textContent = "中文";
     document.getElementById("restartButton").textContent = "restart case";
 }
+
+const saveRegistryKey = "deduction-game-saves-v1";
+const activeLanguage = isEnglish ? "en" : "zh";
+const activeSaveId = new URLSearchParams(window.location.search).get("save");
+
+function getSavedGames() {
+    try {
+        const savedGames = JSON.parse(localStorage.getItem(saveRegistryKey));
+        return Array.isArray(savedGames) ? savedGames : [];
+    } catch {
+        return [];
+    }
+}
+
+const savedGames = getSavedGames();
+const activeSave = savedGames.find(game => game.id === activeSaveId);
+const hasActiveSave = Boolean(activeSave);
+
+function loadGame(saveId) {
+    const url = new URL(window.location.href);
+    url.searchParams.set("save", saveId);
+    window.location.href = url.toString();
+}
+
+function deleteGame(saveId) {
+    const gameIndex = savedGames.findIndex(game => game.id === saveId);
+    if (gameIndex === -1) return;
+
+    const [deletedGame] = savedGames.splice(gameIndex, 1);
+    localStorage.removeItem(`deduction-game-progress-en-v1-${deletedGame.id}`);
+    localStorage.removeItem(`deduction-game-progress-zh-v1-${deletedGame.id}`);
+    localStorage.setItem(saveRegistryKey, JSON.stringify(savedGames));
+
+    const url = new URL(window.location.href);
+    url.searchParams.delete("save");
+    window.location.href = url.toString();
+}
+
+function createGame(name) {
+    const saveName = name.trim();
+    if (!saveName) return;
+
+    const newGame = {
+        id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+        name: saveName,
+        language: activeLanguage
+    };
+    savedGames.push(newGame);
+    localStorage.setItem(saveRegistryKey, JSON.stringify(savedGames));
+    loadGame(newGame.id);
+}
+
+function setupSaveDialog() {
+    const dialog = document.getElementById("saveDialog");
+    if (hasActiveSave) {
+        dialog.classList.add("hidden");
+        return;
+    }
+
+    const copy = isEnglish
+        ? {
+            title: "Choose a Case",
+            description: "Name a new case or load a previously saved case.",
+            placeholder: "New case name",
+            create: "Start New Case",
+            load: "Load",
+            delete: "Delete",
+            confirmDelete: "Delete this saved case? This cannot be undone."
+        }
+        : {
+            title: "选择案件",
+            description: "为新案件命名，或载入之前保存的案件。",
+            placeholder: "新案件名称",
+            create: "开始新案件",
+            load: "载入",
+            delete: "删除",
+            confirmDelete: "要删除这个已保存的案件吗？此操作无法撤销。"
+        };
+    document.getElementById("saveDialogTitle").textContent = copy.title;
+    document.getElementById("saveDialogDescription").textContent = copy.description;
+    document.getElementById("saveName").placeholder = copy.placeholder;
+    document.getElementById("createSaveButton").textContent = copy.create;
+
+    const saveList = document.getElementById("saveList");
+    savedGames
+        .forEach(game => {
+            const item = document.createElement("div");
+            item.className = "save-item";
+            const name = document.createElement("span");
+            name.className = "save-item-name";
+            name.textContent = game.name;
+            const loadButton = document.createElement("button");
+            loadButton.type = "button";
+            loadButton.textContent = copy.load;
+            loadButton.addEventListener("click", () => loadGame(game.id));
+            const deleteButton = document.createElement("button");
+            deleteButton.type = "button";
+            deleteButton.className = "delete-save";
+            deleteButton.textContent = copy.delete;
+            deleteButton.addEventListener("click", () => {
+                if (window.confirm(copy.confirmDelete)) deleteGame(game.id);
+            });
+            const actions = document.createElement("div");
+            actions.className = "save-actions";
+            actions.append(loadButton, deleteButton);
+            item.append(name, actions);
+            saveList.appendChild(item);
+        });
+
+    document.getElementById("saveForm").addEventListener("submit", event => {
+        event.preventDefault();
+        createGame(document.getElementById("saveName").value);
+    });
+    document.getElementById("saveName").focus();
+}
+
+setupSaveDialog();
 </script>
 
 <script>
@@ -240,6 +452,48 @@ const state = {
     solved: false,
     ending: false
 };
+
+const englishSaveKey = `deduction-game-progress-en-v1-${activeSaveId}`;
+
+function saveEnglishGame() {
+    localStorage.setItem(englishSaveKey, JSON.stringify({
+        clues: [...state.clues],
+        talked: [...state.talked],
+        examined: [...state.examined],
+        accusations: state.accusations,
+        solved: state.solved,
+        ending: state.ending,
+        status: statusEl.textContent,
+        output: output.innerHTML
+    }));
+}
+
+function restoreEnglishGame() {
+    try {
+        const savedGame = JSON.parse(localStorage.getItem(englishSaveKey));
+        if (!savedGame) return false;
+
+        state.clues = new Set(savedGame.clues || []);
+        state.talked = new Set(savedGame.talked || []);
+        state.examined = new Set(savedGame.examined || []);
+        state.accusations = savedGame.accusations || 0;
+        state.solved = Boolean(savedGame.solved);
+        state.ending = Boolean(savedGame.ending);
+        output.innerHTML = savedGame.output || "";
+        statusEl.textContent = savedGame.status || "CASE STATUS: OPEN";
+        return true;
+    } catch {
+        localStorage.removeItem(englishSaveKey);
+        return false;
+    }
+}
+
+if (isEnglish && hasActiveSave) {
+    window.gamePersistence = {
+        save: saveEnglishGame,
+        clear: () => localStorage.removeItem(englishSaveKey)
+    };
+}
 
 const suspects = {
     clara: {
@@ -958,6 +1212,7 @@ CASE CLOSED.`, "normal");
 }
 
 function restartGame() {
+    window.gamePersistence?.clear();
     location.reload();
 }
 
@@ -1060,9 +1315,11 @@ function submitCommand() {
     input.value = "";
     if (window.murderRunCommand) {
         window.murderRunCommand(value);
+        window.gamePersistence?.save();
         return;
     }
     runCommand(value);
+    window.gamePersistence?.save();
 }
 
 commandForm.addEventListener("submit", e => {
@@ -1094,9 +1351,15 @@ input.addEventListener("keydown", e => {
     }
 });
 
-document.addEventListener("click", () => input.focus());
+document.addEventListener("click", () => {
+    if (document.getElementById("saveDialog").classList.contains("hidden")) {
+        input.focus();
+    }
+});
 
-printIntro();
+if (!isEnglish || !hasActiveSave || !restoreEnglishGame()) {
+    printIntro();
+}
 </script>
 <script>
 (() => {
@@ -1410,7 +1673,7 @@ printIntro();
         if (command === "notes" || command === "笔记") return say("侦探笔记\n\n确定真实的死亡时间。区分掩盖私人秘密的谎言与掩盖谋杀的谎言。接着将动机、机会和物证联系到同一个人身上。");
         if (command === "status" || command === "状态") return details();
         if (command === "clear" || command === "清屏") { output.innerHTML = ""; return; }
-        if (command === "restart" || command === "reset" || command === "重启") return location.reload();
+        if (command === "restart" || command === "reset" || command === "重启") return restartGame();
         let match = command.match(/^(talk|interview|交谈)\s+(.+)$/); if (match) return interview(match[2]);
         match = command.match(/^(question|提问)\s+(.+)$/); if (match) return question(match[1]);
         match = command.match(/^(examine|搜查)\s+(.+)$/); if (match) return examine(match[1]);
@@ -1418,6 +1681,48 @@ printIntro();
         match = command.match(/^(accuse|指控)\s+(.+)$/); if (match) return accuse(match[1]);
         say(`未知命令：“${raw}”\n\n输入“帮助”查看可用命令。`, "warning");
     };
+
+    const chineseSaveKey = `deduction-game-progress-zh-v1-${activeSaveId}`;
+
+    function saveChineseGame() {
+        localStorage.setItem(chineseSaveKey, JSON.stringify({
+            clues: [...game.clues],
+            talked: [...game.talked],
+            questioned: game.questioned,
+            searched: [...game.searched],
+            accusations: game.accusations,
+            solved: game.solved,
+            status: statusEl.textContent,
+            output: output.innerHTML
+        }));
+    }
+
+    function restoreChineseGame() {
+        try {
+            const savedGame = JSON.parse(localStorage.getItem(chineseSaveKey));
+            if (!savedGame) return false;
+
+            game.clues = new Set(savedGame.clues || []);
+            game.talked = new Set(savedGame.talked || []);
+            game.questioned = savedGame.questioned || {};
+            game.searched = new Set(savedGame.searched || []);
+            game.accusations = savedGame.accusations || 0;
+            game.solved = Boolean(savedGame.solved);
+            output.innerHTML = savedGame.output || "";
+            statusEl.textContent = savedGame.status || "案件状态：进行中";
+            return true;
+        } catch {
+            localStorage.removeItem(chineseSaveKey);
+            return false;
+        }
+    }
+
+    if (hasActiveSave) {
+        window.gamePersistence = {
+            save: saveChineseGame,
+            clear: () => localStorage.removeItem(chineseSaveKey)
+        };
+    }
 
     output.innerHTML = "";
     statusEl.textContent = "案件状态：进行中";
@@ -1434,6 +1739,7 @@ printIntro();
     say("输入“帮助”查看可执行的命令。", "system");
     say("");
     say("档案室已封锁。时钟显示晚上 9:41。", "muted");
+    if (hasActiveSave) restoreChineseGame();
 })();
 </script>
 </body>
