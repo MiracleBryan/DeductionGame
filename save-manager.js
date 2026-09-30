@@ -78,6 +78,13 @@ function updateInterfaceText() {
 
 const saveRegistryKey = "deduction-game-saves-v1";
 const activeSaveId = new URLSearchParams(window.location.search).get("save");
+const stories = window.storyCatalog || [];
+const legacyStoryIds = { "untitled-case": "blackthorn-manor-murder" };
+
+function getStory(storyId) {
+    const resolvedStoryId = legacyStoryIds[storyId] || storyId;
+    return stories.find(story => story.id === resolvedStoryId) || stories[0];
+}
 
 function getSavedGames() {
     try {
@@ -91,6 +98,7 @@ function getSavedGames() {
 const savedGames = getSavedGames();
 const activeSave = savedGames.find(game => game.id === activeSaveId);
 const hasActiveSave = Boolean(activeSave);
+window.getActiveStory = () => getStory(activeSave?.storyId);
 
 function loadGame(saveId, language) {
     const url = new URL(window.location.href);
@@ -114,13 +122,15 @@ function deleteGame(saveId) {
     window.location.href = url.toString();
 }
 
-function createGame(name) {
+function createGame(name, storyId) {
     const saveName = name.trim();
-    if (!saveName) return;
+    const story = getStory(storyId);
+    if (!saveName || !story) return;
 
     const newGame = {
         id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
         name: saveName,
+        storyId: story.id,
         language: uiEnglish ? "en" : "zh"
     };
     savedGames.push(newGame);
@@ -139,7 +149,7 @@ function setupSaveDialog() {
 
     document.getElementById("saveForm").addEventListener("submit", event => {
         event.preventDefault();
-        createGame(document.getElementById("saveName").value);
+        createGame(document.getElementById("saveName").value, document.getElementById("storySelect").value);
     });
     document.getElementById("saveName").focus();
 }
@@ -151,6 +161,17 @@ function renderSaveDialog() {
     document.getElementById("saveName").placeholder = copy.placeholder;
     document.getElementById("createSaveButton").textContent = copy.create;
 
+    const storySelect = document.getElementById("storySelect");
+    const selectedStoryId = storySelect.value || stories[0]?.id;
+    storySelect.innerHTML = "";
+    stories.forEach(story => {
+        const option = document.createElement("option");
+        option.value = story.id;
+        option.textContent = story.title;
+        option.selected = story.id === selectedStoryId;
+        storySelect.appendChild(option);
+    });
+
     const saveList = document.getElementById("saveList");
     saveList.innerHTML = "";
     savedGames
@@ -159,7 +180,7 @@ function renderSaveDialog() {
             item.className = "save-item";
             const name = document.createElement("span");
             name.className = "save-item-name";
-            name.textContent = game.name;
+            name.textContent = `${game.name} - ${getStory(game.storyId)?.title || stories[0]?.title || "Unknown story"}`;
             const loadButton = document.createElement("button");
             loadButton.type = "button";
             loadButton.textContent = copy.load;

@@ -208,6 +208,17 @@
         font: inherit;
     }
 
+    .save-form select {
+        min-width: 0;
+        max-width: 190px;
+        padding: 7px 9px;
+        color: var(--text);
+        background: #080b0f;
+        border: 1px solid var(--border);
+        border-radius: 5px;
+        font: inherit;
+    }
+
     .save-list {
         display: grid;
         gap: 8px;

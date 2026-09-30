@@ -45,6 +45,7 @@
         </div>
         <p id="saveDialogDescription">为新案件命名，或载入之前保存的案件。</p>
         <form id="saveForm" class="save-form">
+            <select id="storySelect" aria-label="Choose a story"></select>
             <input id="saveName" maxlength="40" autocomplete="off" placeholder="新案件名称" required>
             <button id="createSaveButton" type="submit">开始新案件</button>
         </form>
@@ -54,6 +55,6 @@
 
 <script src="stories/catalog.js"></script>
 <script src="save-manager.js"></script>
-<script src="stories/last-exhibit.js"></script>
+<script src="story-loader.js"></script>
 </body>
 </html>
