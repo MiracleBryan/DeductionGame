@@ -251,8 +251,10 @@
     function intro() {
         output.innerHTML = ""; updateStatus();
         say("案件档案 112 - 黑棘庄园谋杀案", "CASE FILE 112 - THE BLACKTHORN MANOR MURDER", "system");
-        say("暴雨切断了黑棘庄园与外界的联系。富商埃德蒙·布莱克棘死在从内部锁住的书房里：窗户完好，没有凶器，也没有人承认进入过房间。", "A violent storm has cut Blackthorn Manor off from the outside world. Businessman Edmund Blackthorn is dead in a study locked from inside: windows intact, no weapon, and nobody admitting entry.");
-        say("七个人都在隐瞒什么。并非每件奇怪的东西都与谋杀有关。", "Seven people are hiding something. Not every strange object is connected to murder.", "warning");
+        say("暴雨在晚上十点后切断了黑棘庄园与外界的联系。原定于今晚结束的家庭晚宴被埃德蒙·布莱克棘临时延长：他宣布将在翌日早晨处理遗嘱、公司账目和一桩二十多年前的私人事务。没有人知道他准备公开什么。", "After 10 PM, the storm cut Blackthorn Manor off from the outside world. A family dinner that should have ended was extended by Edmund Blackthorn, who announced that he would address his will, company accounts, and a private matter from more than twenty years ago the following morning. Nobody knows what he intended to reveal.");
+        say("晚上 11:40，埃莉诺听见书房内传来重物倒下的声音。门从内部锁住；撞开后，埃德蒙已死在书桌旁。窗户完好，没有明显凶器，也没有人承认进入过房间。", "At 11:40 PM, Eleanor heard something heavy fall inside the study. The door was locked from within; when it was forced open, Edmund was dead beside his desk. The windows were intact, there was no obvious weapon, and nobody admits entering the room.");
+        say("暴雨淹没了通往城镇的路。警方让你在援助抵达前维持现场：埃莉诺、丹尼尔、克拉拉、维克多、马库斯、莉莉和索菲都不能离开庄园。", "Flooded roads have cut off the town. Until help arrives, police have asked you to preserve the scene: Eleanor, Daniel, Clara, Victor, Marcus, Lily, and Sophie must all remain at the manor.", "important");
+        say("你面对的不是一个简单的密室诡计。每个人都带着未说出口的过去；每件奇怪的物品也未必与谋杀有关。", "You are not facing a simple locked-room trick. Everyone carries an unspoken past, and not every strange object belongs to the murder.");
         say("输入“帮助”查看命令。", "Type 'help' to review commands.", "muted");
     }
 
